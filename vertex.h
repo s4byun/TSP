@@ -15,13 +15,13 @@ class Vertex {
     Vertex(int label);
     ~Vertex();
 
-    void addEdge(Vertex* to, int distance);
+    void addEdge(Vertex* to, int distance, int pm, int N);
     bool wasVisited() const;
     int getLabel() const;
 
     void setVisited(bool visited);
 
-    std::pair<int, Vertex*> getMinTo(); 
+    int getMinTo(); 
     bool isDeadEnd(); 
 
   private:

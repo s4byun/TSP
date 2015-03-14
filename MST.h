@@ -1,6 +1,7 @@
 #include "common.h"
 #include "vertex.h"
 #include <vector>
+#include "Minmatching/PerfectMatching.h"
 
 #pragma once
 
@@ -16,8 +17,9 @@ public:
 	~MST();
 
   void buildGraph();
-  void addEdge(Vertex *v1, Vertex* v2, int dist);
+  void addEdge(Vertex *v1, Vertex* v2, int dist, int pm);
   vector<int> getOddVertices();
+  void combine(PerfectMatching* pm, vector<int> oddVertices);
 
 	//deliverable a
 	int makeMST();
@@ -27,15 +29,19 @@ public:
 	int makeTSP2();
 
 	//deliverable c
-	void makeTSP1_5();
-	
+  std::vector<int> makeTSP1_5();
+
+  //EC1
+	int twoOptE(vector<int> route, int oldSum);
+  int twoOptP(vector<int> route, int oldSum);
+
 	float calMean(int option);
 	float calStd(int option);
 
 private:
   std::vector<Vertex*> vertices;
-	void minimumMatching();
-	void combine();
-	int minKey(int key[], bool mstSet[]);
-
+	int minKey(int v_index); 
+  vector<int> twoOptPSwap(const int i, const int j, vector<int> route);
+  vector<int> twoOptESwap(const int i, const int j, vector<int> route);
+  int totalDistance(vector<int> route);
 };

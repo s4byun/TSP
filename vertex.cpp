@@ -6,27 +6,30 @@ Vertex::Vertex(int label) {
 
 Vertex::~Vertex() {}
 
-void Vertex::addEdge(Vertex* to, int distance) {
+void Vertex::addEdge(Vertex* to, int distance, int pm, int N) {
   Edge newEdge(this, to, distance);
-  std::pair<int, Edge> newPair(to->getLabel(), newEdge);
-  edges.insert(newPair);
+  if(pm < 0) {
+    std::pair<int, Edge> newPair(to->getLabel() + N, newEdge);
+    edges.insert(newPair);
+  }
+  else {
+    std::pair<int, Edge> newPair(to->getLabel(), newEdge);
+    edges.insert(newPair);
+  }
 }
 
-std::pair<int, Vertex*> Vertex::getMinTo() {
+int Vertex::getMinTo() {
   int min = MAX_INT;
-  Vertex* minVertex;
+  int index;
 
   for(auto &it: edges) {
-    if(!(it.second.getTo()->wasVisited())) {
-      if(min > it.second.getLength()) {
-        min = it.second.getLength();
-        minVertex = it.second.getTo();
-      }
+    if(min > it.second.getLength()) {
+      min = it.second.getLength();
+      index = it.first;
     }
   }
 
-  std::pair<int, Vertex*> minPair(min, minVertex); 
-  return minPair;
+  return index;
 }
 
 bool Vertex::isDeadEnd() {
