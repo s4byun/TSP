@@ -3,6 +3,10 @@
 
 MST::MST(float** input, int size) {
   adjacentMatrix = input;
+
+  key = new int[size];   
+  mstSet = new bool[size];  
+  parent = new int[size];
   N = size;
 }
 
@@ -12,63 +16,84 @@ MST::~MST() {
   }
 }
 
+int MST::totalWeight() {
+  int sum = 0;
+  for(Vertex* v : vertices) {
+    for(auto& it : v->edges) {
+      sum += it.second.getLength();
+    }
+  }
+
+  return sum/2;
+}
+
+//A utility function to find the vertex with minimum key value, from
+// the set of vertices not yet included in MST
+int MST::minKey(int key[], bool mstSet[])
+{
+  // Initialize min value
+  int min = INT_MAX, min_index;
+
+  for (int v = 0; v < N; v++)
+    if (mstSet[v] == false && key[v] < min)
+      min = key[v], min_index = v;
+
+  return min_index;
+}
+
 void MST::buildGraph() {
-  for(int i=0; i<N; i++) {
+  // Initialize all keys as INFINITE
+  for (int i = 0; i < N; i++)
+    key[i] = MAX_INT, mstSet[i] = false;
+
+  // Always include first 1st vertex in MST.
+  key[0] = 0;     // Make key 0 so that this vertex is picked as first vertex
+  parent[0] = -1; // First node is always root of MST
+
+
+  // The MST will have V vertices
+  for (int count = 0; count < N-1; count++)
+  {
+    // Pick the minimum key vertex from the set of vertices
+    // not yet included in MST
+    int u = minKey(key, mstSet);
+    mstSet[u] = true;
+    for (int v = 0; v < N; v++)
+      // mstSet[v] is false for vertices not yet included in MST
+      // Update the key only if adjacentMatrix[u][v] is smaller than key[v]
+      if (adjacentMatrix[u][v] && mstSet[v] == false && adjacentMatrix[u][v] <  key[v])
+        parent[v]  = u, key[v] = adjacentMatrix[u][v];
+  }
+
+
+  for(int i=0; i<N; ++i) {
     Vertex* v = new Vertex(i);
     vertices.push_back(v);
   }
 
-  for(int row = 0; row < N; ++row) {
-    Vertex* v1 = vertices[row];
-    for(int col = row+1; col < N; col++) {
-      addEdge(v1, vertices[col], adjacentMatrix[row][col], 1);
-    }
+  for(int i=1; i<N; ++i) {
+    Vertex* from = vertices[i];
+    Vertex* to = vertices[parent[i]];
+    int dist = adjacentMatrix[i][parent[i]];
+    addEdge(from, to, dist, 1);
   }
+  /*
+     for(int i=0; i<N; i++) {
+     Vertex* v = new Vertex(i);
+     vertices.push_back(v);
+     }
+
+     for(int row = 0; row < N; ++row) {
+     Vertex* v1 = vertices[row];
+     for(int col = row+1; col < N; col++) {
+     addEdge(v1, vertices[col], adjacentMatrix[row][col], 1);
+     }
+     }*/
 }
 
 void MST::addEdge(Vertex* v1, Vertex* v2, int dist, int pm) {
   v1->addEdge(v2, dist, pm, N);
   v2->addEdge(v1, dist, pm, N);
-}
-
-int MST::makeMST() {
-  priority_queue <Edge> pq;
-  int sum=0;
-
-  for(Vertex* v : vertices) {
-    v->setVisited(false);
-  }
-
-  Vertex* start = vertices[0];
-  start->setVisited(true);
-
-  for(auto &it: start->edges) {
-    pq.push(it.second);
-  }
-
-  while(!pq.empty()) {
-    Edge edge = pq.top();
-    pq.pop();
-
-    Vertex* cur = edge.getTo();
-
-    if(cur->wasVisited()) {
-      cur->edges.erase(edge.getFrom()->getLabel());
-      edge.getFrom()->edges.erase(cur->getLabel());
-      continue;
-    }
-
-    sum += edge.getLength();
-    cur->setVisited(true);
-
-    for(auto &it: cur->edges) {
-      if(!it.second.getTo()->wasVisited()) {
-        pq.push(it.second);
-      }
-    }
-  }
-
-  return sum;
 }
 
 // TSP2
@@ -149,7 +174,7 @@ vector<int> MST::makeTSP1_5() {
   std::stack<Vertex*> c; // Euler circuit
   std::vector<int> route;
   Vertex* v = vertices[0];
-  
+
   // Euler tour
   do{
     if(v->edges.empty()){
@@ -188,7 +213,7 @@ vector<int> MST::makeTSP1_5() {
     route.push_back(u->getLabel());
   }
 
-    return route;
+  return route;
 }
 
 int MST::twoOptP(vector<int> route, int oldSum) {
@@ -238,15 +263,15 @@ vector<int> MST::twoOptPSwap(const int i, const int j, vector<int> route) {
 
 int MST::twoOptE(vector<int> route, int oldSum) {
   int improve = 0;
-  
+
   int best_sum = oldSum; 
   while(improve < 20) {
     for(int i=1; i<route.size()-2; ++i) {
       for(int j=i+1; j<route.size()-1; ++j) {
         int new_sum = best_sum - adjacentMatrix[route[i-1]][route[i]]
-                               - adjacentMatrix[route[j]][route[j+1]]
-                               + adjacentMatrix[route[i-1]][route[j]]
-                               + adjacentMatrix[route[i]][route[j+1]];
+          - adjacentMatrix[route[j]][route[j+1]]
+          + adjacentMatrix[route[i-1]][route[j]]
+          + adjacentMatrix[route[i]][route[j+1]];
         if(new_sum < best_sum) {
           improve = 0;
           route = twoOptESwap(i, j, route);

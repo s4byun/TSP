@@ -80,9 +80,9 @@ int main() {
   int W, H, N;
   int trial;
 
-  W = 5000;
-  H = 3000;
-  N = 7000;
+  W = 13134;
+  H = 11638;
+  N = 8699;
   trial = 10;
 
   cout<<"W: "<<W<<" H: "<<H<<" N:"<<N<<endl;
@@ -102,7 +102,7 @@ int main() {
     mst.buildGraph();
 
     //Deliverable A: From pointset and adjacentMatrix, you should construct MST with Prim or Kruskal
-    int mstS = mst.makeMST();
+    int mstS = mst.totalWeight();
     mst_sum.push_back(mstS);
     cout << "MST Cost: " << mstS << endl;
 
